@@ -1,4 +1,4 @@
-VR_APP['MAX_MESSAGES'] = 5;
+VR_APP['MAX_MESSAGES'] = 20;
 //var socket = io();
 
 VR_APP['screens'] = {};

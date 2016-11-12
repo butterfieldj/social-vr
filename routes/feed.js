@@ -34,9 +34,11 @@ router.get('/', function(req, res, next) {
                         profile_image_url: results[i].user.profile_image_url_https,
                         text_color: results[i].user.profile_text_color,
                         profile_banner_url: results[i].user.profile_banner_url
-                    }
+                    },
+                    media_url: results[i].entities.media ? results[i].entities.media[0].media_url_https : null
                 });
-                console.log(results[i]);
+                console.log(results[i].entities.media);
+                console.log(tweets[i]);
             }
 
             res.render(path.resolve(__dirname + '/../views/feed.ejs'), { timeline: tweets });

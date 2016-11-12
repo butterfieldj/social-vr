@@ -15,7 +15,7 @@ var Twitter = function(twitterKey, twitterSecret) {
     );
 
     var getUserTimeline = function(userKey, userSecret, userId, done) {
-        oauth.get('https://api.twitter.com/1.1/statuses/user_timeline.json?user_id=' + userId,
+        oauth.get('https://api.twitter.com/1.1/statuses/user_timeline.json?count=50&user_id=' + userId,
         userKey,
         userSecret,
         function(error, results, response){

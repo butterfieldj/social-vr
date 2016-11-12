@@ -5,6 +5,8 @@ VR_APP['screens']['main'] = (function() {
         canAdd = false,
         loader = new THREE.TextureLoader();
 
+    var counter = 0;
+
     function onResize(e) {
         VR_APP.effect.setSize(window.innerWidth, window.innerHeight);
         VR_APP.camera.aspect = window.innerWidth / window.innerHeight;
@@ -50,14 +52,15 @@ VR_APP['screens']['main'] = (function() {
         var words = text.split(' ');
         var currentWidth = 0;
         var currentWord = '';
+        var lines = 1;
         for(var i = 0; i < words.length; i++) {
             currentWidth += context.measureText(words[i]).width;
-            console.log(currentWidth);
             if(currentWidth > size) {
                 drawText(context, currentWord, x, y, fillStyle);
                 currentWidth = 0;
                 currentWord = words[i];
                 y += 20;
+                lines += 1;
             } else {
                 currentWord += ' ' + words[i];
             }
@@ -66,6 +69,76 @@ VR_APP['screens']['main'] = (function() {
         if(currentWord != '') {
             drawText(context, currentWord, x, y, fillStyle);
         }
+
+        return lines;
+    }
+
+    function getRandomArbitrary(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    function getRandomOfTwo(num1, num2) {
+        return Math.random() > 0.5 ? num1 : num2;
+    }
+
+    function addTweetToScene(index, canvas, user) {
+        var textureMap = new THREE.Texture(canvas);
+        textureMap.needsUpdate = true;
+
+        var material = new THREE.SpriteMaterial({
+            map: textureMap,
+            transparent: false,
+            color: 0xffffff
+        });
+
+        var sprite = new THREE.Sprite(material);
+        sprite.scale.set( 5, 5, 1 );
+
+        counter++;
+        var num = getRandomArbitrary(0,5);
+        var num2 = getRandomArbitrary(0,5);
+
+        var quadrant = counter % 4;
+        console.log(quadrant);
+        switch (quadrant) {
+            case 0:
+                num *= 1;
+                num2 *= 1;
+                break;
+            case 1:
+                num *= -1;
+                num2 *= 1;
+                break;
+            case 2:
+                num *= 1;
+                num2 *= -1;
+                break;
+            case 2:
+                num *= -1;
+                num2 *= -1;
+                break;
+
+            default:
+
+        }
+
+        // sprite.position.set(
+        //     //getRandomArbitrary(-5, 5),
+        //     num2 > 0 ? num2 + getRandomArbitrary(0, 3) : num2 - getRandomArbitrary(0, 3),
+        //     10,
+        //     num > 0 ? num + getRandomArbitrary(0, 3) : num - getRandomArbitrary(0, 3)
+        // );
+        sprite.position.set(
+            //getRandomArbitrary(-5, 5),
+            num,
+            10,
+            5+num2
+        );
+        console.log('user: ' + user, 'x: ' + sprite.position.x, 'z: ' + sprite.position.z);
+
+        VR_APP.scene.add(sprite);
+        VR_APP.messages[index].mesh = sprite;
+        VR_APP.messages[index].initialized = true;
     }
 
     // Create a canvas object and draw text on it
@@ -84,7 +157,6 @@ VR_APP['screens']['main'] = (function() {
         img.crossOrigin = 'anonymous';
         img.onload = function() {
             context.drawImage(img, 0, 0);
-            VR_APP.messages[index].initialized = true;
 
             context.fillStyle = '#' + tweet.user.text_color;
             context.textAlign = 'left';
@@ -93,23 +165,21 @@ VR_APP['screens']['main'] = (function() {
             drawText(context, tweet.user.name, img.width + padding, 15, '#000000');
             drawText(context, '@' + tweet.user.screen_name, img.width + context.measureText(tweet.user.name).width + 15, 15, '#707070');
 
-            drawLongText(context, tweet.text, img.width + padding, 45, '#000000', size / 2);
+            var lines = drawLongText(context, tweet.text, img.width + padding, 45, '#000000', size / 2);
 
-            var textureMap = new THREE.Texture(canvas);
-            textureMap.needsUpdate = true;
+            if (tweet.media_url) {
+                var media = new Image();
+                media.crossOrigin = 'anonymous';
+                media.onload = function() {
+                    // TODO set media size restrictions
+                    context.drawImage(media, 0 + img.width, (lines + 2) * spacing, media.width / 4, media.height / 4);
+                    addTweetToScene(index, canvas, tweet.user.name);
+                }
+                media.src = tweet.media_url;
+            } else {
+                addTweetToScene(index, canvas, tweet.user.name);
+            }
 
-            var material = new THREE.SpriteMaterial({
-                map: textureMap,
-                transparent: false,
-                color: 0xffffff
-            });
-
-            var sprite = new THREE.Sprite(material);
-            sprite.scale.set( 5, 5, 1 );
-            sprite.position.set(0, 10, -3);
-
-            VR_APP.scene.add(sprite);
-            VR_APP.messages[index].mesh = sprite;
         };
         img.src = tweet.user.profile_image_url;
     }
@@ -132,7 +202,8 @@ VR_APP['screens']['main'] = (function() {
                     if(currentFrame >= framesBetween){
                         currentFrame = 0;
                         createMessageText2d(i);
-                        canAdd = false;
+                        //canAdd = false;
+                        //console.log('adding');
                     }
                 } else {
                     currentFrame = 0;
