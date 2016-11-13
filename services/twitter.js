@@ -1,4 +1,4 @@
-var OAuth = require('OAuth').OAuth;
+var OAuth = require('oauth').OAuth;
 
 var Twitter = function(twitterKey, twitterSecret) {
     var key = twitterKey;

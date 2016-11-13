@@ -1,9 +1,13 @@
-VR_APP['screens']['main'] = (function() {
+VR_APP.screens.main = (function() {
 
     var framesBetween = 5000,
         currentFrame = 0,
         canAdd = false,
-        loader = new THREE.TextureLoader();
+        loader = new THREE.TextureLoader(),
+        raycaster = new THREE.Raycaster(),
+        clicked = false,
+        sprites = [],
+        target;
 
     var counter = 0;
 
@@ -13,11 +17,16 @@ VR_APP['screens']['main'] = (function() {
         VR_APP.camera.updateProjectionMatrix();
     }
 
+    function onClick() {
+        clicked = true;
+    }
+
     function initialize(){
         VR_APP.lastRender = 0;
 
         window.addEventListener('resize', onResize, true);
         window.addEventListener('vrdisplaypresentchange', onResize, true);
+        document.addEventListener('click', onClick);
 
         // Add a repeating grid as a skybox.
         var boxWidth = 20;
@@ -33,12 +42,32 @@ VR_APP['screens']['main'] = (function() {
             var geometry = new THREE.BoxGeometry(boxWidth, boxWidth, boxWidth);
             var material = new THREE.MeshBasicMaterial({
                 map: texture,
-                //color: 0x01BE00,
                 side: THREE.BackSide
             });
 
             var skybox = new THREE.Mesh(geometry, material);
             VR_APP.scene.add(skybox);
+
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            canvas.height = 8;
+            canvas.width = 8;
+            context.fillStyle = '#000000';
+            context.fillRect(0, 0, 8, 8);
+
+            var textureMap = new THREE.Texture(canvas);
+            textureMap.needsUpdate = true;
+
+            var material = new THREE.SpriteMaterial({
+                map: textureMap,
+                transparent: false,
+                color: 0xffffff
+            });
+
+            target = new THREE.Sprite(material);
+            target.scale.set(.02, .02, .02);
+
+            VR_APP.scene.add(target);
         }
     }
 
@@ -81,7 +110,7 @@ VR_APP['screens']['main'] = (function() {
         return Math.random() > 0.5 ? num1 : num2;
     }
 
-    function addTweetToScene(index, canvas, user) {
+    function addTweetToScene(index, canvas, tweet) {
         var textureMap = new THREE.Texture(canvas);
         textureMap.needsUpdate = true;
 
@@ -94,6 +123,7 @@ VR_APP['screens']['main'] = (function() {
         var sprite = new THREE.Sprite(material);
         sprite.scale.set( 5, 5, 1 );
 
+        // TODO: Refactor this
         counter++;
         var num = getRandomArbitrary(0,5);
         var num2 = getRandomArbitrary(0,5);
@@ -134,11 +164,14 @@ VR_APP['screens']['main'] = (function() {
             10,
             5+num2
         );
-        console.log('user: ' + user, 'x: ' + sprite.position.x, 'z: ' + sprite.position.z);
+        sprite.tweet = tweet;
+        console.log('x: ' + sprite.position.x, 'z: ' + sprite.position.z);
 
         VR_APP.scene.add(sprite);
         VR_APP.messages[index].mesh = sprite;
         VR_APP.messages[index].initialized = true;
+
+        sprites.push(sprite);
     }
 
     // Create a canvas object and draw text on it
@@ -173,11 +206,11 @@ VR_APP['screens']['main'] = (function() {
                 media.onload = function() {
                     // TODO set media size restrictions
                     context.drawImage(media, 0 + img.width, (lines + 2) * spacing, media.width / 4, media.height / 4);
-                    addTweetToScene(index, canvas, tweet.user.name);
+                    addTweetToScene(index, canvas, tweet.text);
                 }
                 media.src = tweet.media_url;
             } else {
-                addTweetToScene(index, canvas, tweet.user.name);
+                addTweetToScene(index, canvas, tweet.text);
             }
 
         };
@@ -217,10 +250,50 @@ VR_APP['screens']['main'] = (function() {
         }
     }
 
+    function getSelectedTweets() {
+        // update the picking ray with the camera and mouse position
+    	//raycaster.setFromCamera(VR_APP.camera.getWorldPosition(), VR_APP.camera.getWorldDirection());
+        //console.log('WORLD DIR', VR_APP.camera.getWorldDirection());
+        raycaster.set(VR_APP.camera.getWorldPosition(), VR_APP.camera.getWorldDirection());
+        console.log('DIR', VR_APP.camera.getWorldDirection());
+    	// calculate objects intersecting the picking ray
+    	var intersects = raycaster.intersectObjects(VR_APP.scene.children);
+
+        for(var i = 0; i < sprites.length; i++) {
+            sprites[i].material.color.set(0x00ff00);
+        }
+
+    	for (var i = 0; i < intersects.length; i++) {
+            if(intersects[i].object.hasOwnProperty('tweet')) {
+                console.log(intersects[i].object.tweet);
+                console.log(intersects[i]);
+                intersects[ i ].object.material.color.set( 0xff0000 );
+            }
+    	}
+    }
+
+    function getInput() {
+        if(clicked) {
+            //getSelectedTweets();
+            //clicked = false;
+        }
+    }
+
+    function updateTarget() {
+        if(typeof target !== 'undefined'){
+            console.log(target.position);
+            var pos = VR_APP.camera.getWorldDirection();
+            target.position.set(pos.x, pos.y, pos.z);
+        }
+    }
+
     function animate(timestamp) {
         var delta = Math.min(timestamp - VR_APP.lastRender, 500);
         VR_APP.lastRender = timestamp;
 
+        getInput();
+
+        updateTarget();
         updateMessages();
 
         // Update VR headset position and apply to camera.
