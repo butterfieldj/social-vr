@@ -30,8 +30,6 @@ VR_APP.screens.main = (function() {
 
         // Add a repeating grid as a skybox.
         var boxWidth = 20;
-        //loader.load('/img/box.png', onTextureLoaded);
-        //loader.load('/img/white.png', onTextureLoaded);
         loader.load('/img/background.png', onTextureLoaded);
 
         function onTextureLoaded(texture) {
@@ -40,6 +38,7 @@ VR_APP.screens.main = (function() {
             texture.repeat.set(boxWidth, boxWidth);
 
             var geometry = new THREE.BoxGeometry(boxWidth, boxWidth, boxWidth);
+
             var material = new THREE.MeshBasicMaterial({
                 map: texture,
                 side: THREE.BackSide
@@ -48,6 +47,7 @@ VR_APP.screens.main = (function() {
             var skybox = new THREE.Mesh(geometry, material);
             VR_APP.scene.add(skybox);
 
+            // Target in middle of screen
             var canvas = document.createElement('canvas');
             var context = canvas.getContext('2d');
             canvas.height = 8;
@@ -114,6 +114,7 @@ VR_APP.screens.main = (function() {
         var textureMap = new THREE.Texture(canvas);
         textureMap.needsUpdate = true;
 
+        /*
         var material = new THREE.SpriteMaterial({
             map: textureMap,
             transparent: false,
@@ -122,6 +123,11 @@ VR_APP.screens.main = (function() {
 
         var sprite = new THREE.Sprite(material);
         sprite.scale.set( 5, 5, 1 );
+        */
+        var material = new THREE.MeshBasicMaterial({
+            map: textureMap,
+            transparent: true
+        });
 
         // TODO: Refactor this
         counter++;
@@ -152,12 +158,7 @@ VR_APP.screens.main = (function() {
 
         }
 
-        // sprite.position.set(
-        //     //getRandomArbitrary(-5, 5),
-        //     num2 > 0 ? num2 + getRandomArbitrary(0, 3) : num2 - getRandomArbitrary(0, 3),
-        //     10,
-        //     num > 0 ? num + getRandomArbitrary(0, 3) : num - getRandomArbitrary(0, 3)
-        // );
+        /*
         sprite.position.set(
             //getRandomArbitrary(-5, 5),
             num,
@@ -169,9 +170,24 @@ VR_APP.screens.main = (function() {
 
         VR_APP.scene.add(sprite);
         VR_APP.messages[index].mesh = sprite;
+        */
+
+        var plane = new THREE.PlaneGeometry(4, 4);
+
+        var mesh = new THREE.Mesh(plane, material);
+        // mesh.overdraw = true;
+        mesh.doubleSided = true;
+        mesh.position.set(num, 10, 5 + num2);
+        //mesh.position.set(0, 10, -5);
+        mesh.tweet = tweet;
+        VR_APP.scene.add(mesh);
+        VR_APP.messages[index].mesh = mesh;
+
+        //console.log('MESH', mesh);
+
         VR_APP.messages[index].initialized = true;
 
-        sprites.push(sprite);
+        sprites.push(mesh);
     }
 
     // Create a canvas object and draw text on it
@@ -223,6 +239,14 @@ VR_APP.screens.main = (function() {
             if(VR_APP.messages[i].initialized){
                 numberOfMesseges += 1;
                 VR_APP.messages[i].mesh.position.y -= 0.02;
+
+                var pos = VR_APP.camera.getWorldDirection();
+                //VR_APP.messages[i].mesh.position.set(pos.x - 5, pos.y, pos.z - 5);
+
+                // SET ROTATION HERE?!
+                //console.log(VR_APP.messages[i].mesh);
+                VR_APP.messages[i].mesh.lookAt(VR_APP.camera.getWorldPosition());
+
                 if(VR_APP.messages[i].mesh.position.y < -10){
                     VR_APP.scene.remove(VR_APP.messages[i].mesh);
                     VR_APP.messages.splice(i, 1);
@@ -255,7 +279,7 @@ VR_APP.screens.main = (function() {
     	//raycaster.setFromCamera(VR_APP.camera.getWorldPosition(), VR_APP.camera.getWorldDirection());
         //console.log('WORLD DIR', VR_APP.camera.getWorldDirection());
         raycaster.set(VR_APP.camera.getWorldPosition(), VR_APP.camera.getWorldDirection());
-        console.log('DIR', VR_APP.camera.getWorldDirection());
+        //console.log('DIR', VR_APP.camera.getWorldDirection());
     	// calculate objects intersecting the picking ray
     	var intersects = raycaster.intersectObjects(VR_APP.scene.children);
 
@@ -265,6 +289,7 @@ VR_APP.screens.main = (function() {
 
     	for (var i = 0; i < intersects.length; i++) {
             if(intersects[i].object.hasOwnProperty('tweet')) {
+                // mostly working!
                 console.log(intersects[i].object.tweet);
                 console.log(intersects[i]);
                 intersects[ i ].object.material.color.set( 0xff0000 );
@@ -274,14 +299,13 @@ VR_APP.screens.main = (function() {
 
     function getInput() {
         if(clicked) {
-            //getSelectedTweets();
+            getSelectedTweets();
             //clicked = false;
         }
     }
 
     function updateTarget() {
         if(typeof target !== 'undefined'){
-            console.log(target.position);
             var pos = VR_APP.camera.getWorldDirection();
             target.position.set(pos.x, pos.y, pos.z);
         }
