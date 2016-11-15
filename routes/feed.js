@@ -17,8 +17,6 @@ router.use('/', function(req, res, next) {
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-    console.log("USER", req.user);
-
     twitter.getUserHomeTimeline(
         req.user.twitter.token,
         req.user.twitter.tokenSecret,
@@ -35,13 +33,24 @@ router.get('/', function(req, res, next) {
                         text_color: results[i].user.profile_text_color,
                         profile_banner_url: results[i].user.profile_banner_url
                     },
-                    media_url: results[i].entities.media ? results[i].entities.media[0].media_url_https : null
+                    media_url: results[i].entities.media ? results[i].entities.media[0].media_url_https : null,
+                    id: results[i].id_str
                 });
-                console.log(results[i].entities.media);
-                console.log(tweets[i]);
+                console.log(results[i]);
             }
 
             res.render(path.resolve(__dirname + '/../views/feed.ejs'), { timeline: tweets });
+        }
+    )
+});
+
+router.get('/like/:id', function(req, res, next) {
+    twitter.likeTweet(
+        req.user.twitter.token,
+        req.user.twitter.tokenSecret,
+        req.params.id,
+        function(result) {
+            console.log('RESULT', result);
         }
     )
 });

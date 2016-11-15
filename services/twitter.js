@@ -15,28 +15,45 @@ var Twitter = function(twitterKey, twitterSecret) {
     );
 
     var getUserTimeline = function(userKey, userSecret, userId, done) {
-        oauth.get('https://api.twitter.com/1.1/statuses/user_timeline.json?count=50&user_id=' + userId,
-        userKey,
-        userSecret,
-        function(error, results, response){
-            results = JSON.parse(results);
-            done(results);
-        });
+        oauth.get(
+            'https://api.twitter.com/1.1/statuses/user_timeline.json?count=50&user_id=' + userId,
+            userKey,
+            userSecret,
+            function(error, results, response) {
+                results = JSON.parse(results);
+                done(results);
+            }
+        );
     };
 
     var getUserHomeTimeline = function(userKey, userSecret, userId, done) {
-        oauth.get('https://api.twitter.com/1.1/statuses/home_timeline.json?user_id=' + userId,
-        userKey,
-        userSecret,
-        function(error, results, response){
-            results = JSON.parse(results);
-            done(results);
-        });
+        oauth.get(
+            'https://api.twitter.com/1.1/statuses/home_timeline.json?user_id=' + userId,
+            userKey,
+            userSecret,
+            function(error, results, response) {
+                results = JSON.parse(results);
+                done(results);
+            }
+        );
     };
+
+    var likeTweet = function(userKey, userSecret, tweetId, done) {
+        oauth.post(
+            'https://api.twitter.com/1.1/favorites/create.json?id=' + tweetId,
+            userKey,
+            userSecret,
+            {},
+            function(error, result, response) {
+                done(result);
+            }
+        );
+    }
 
     return {
         getUserTimeline: getUserTimeline,
-        getUserHomeTimeline: getUserHomeTimeline
+        getUserHomeTimeline: getUserHomeTimeline,
+        likeTweet: likeTweet
     };
 }
 

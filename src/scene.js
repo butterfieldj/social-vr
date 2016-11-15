@@ -6,7 +6,7 @@ VR_APP.screens.main = (function() {
         loader = new THREE.TextureLoader(),
         raycaster = new THREE.Raycaster(),
         clicked = false,
-        sprites = [],
+        meshes = [],
         target;
 
     var counter = 0;
@@ -23,6 +23,8 @@ VR_APP.screens.main = (function() {
 
     function initialize(){
         VR_APP.lastRender = 0;
+
+        console.log(VR_APP.manager);
 
         window.addEventListener('resize', onResize, true);
         window.addEventListener('vrdisplaypresentchange', onResize, true);
@@ -48,26 +50,31 @@ VR_APP.screens.main = (function() {
             VR_APP.scene.add(skybox);
 
             // Target in middle of screen
-            var canvas = document.createElement('canvas');
-            var context = canvas.getContext('2d');
-            canvas.height = 8;
-            canvas.width = 8;
-            context.fillStyle = '#000000';
-            context.fillRect(0, 0, 8, 8);
+            var heart = new Image();
+            heart.onload = function() {
+                var canvas = document.createElement('canvas');
+                var context = canvas.getContext('2d');
+                canvas.height = 16;
+                canvas.width = 16;
+                context.fillStyle = '#000000';
+                context.drawImage(heart, 0, 0, 16, 16);
+                //context.fillRect(0, 0, 8, 8);
 
-            var textureMap = new THREE.Texture(canvas);
-            textureMap.needsUpdate = true;
+                var textureMap = new THREE.Texture(canvas);
+                textureMap.needsUpdate = true;
 
-            var material = new THREE.SpriteMaterial({
-                map: textureMap,
-                transparent: false,
-                color: 0xffffff
-            });
+                var material = new THREE.SpriteMaterial({
+                    map: textureMap,
+                    transparent: false,
+                    color: 0xffffff
+                });
 
-            target = new THREE.Sprite(material);
-            target.scale.set(.02, .02, .02);
+                target = new THREE.Sprite(material);
+                target.scale.set(.02, .02, .02);
 
-            VR_APP.scene.add(target);
+                VR_APP.scene.add(target);
+            }
+            heart.src = '/img/heart.png';
         }
     }
 
@@ -110,84 +117,41 @@ VR_APP.screens.main = (function() {
         return Math.random() > 0.5 ? num1 : num2;
     }
 
+    var randomInList = function(list) {
+        return list[Math.floor(Math.random() * list.length)]
+    };
+
     function addTweetToScene(index, canvas, tweet) {
         var textureMap = new THREE.Texture(canvas);
         textureMap.needsUpdate = true;
 
-        /*
-        var material = new THREE.SpriteMaterial({
-            map: textureMap,
-            transparent: false,
-            color: 0xffffff
-        });
-
-        var sprite = new THREE.Sprite(material);
-        sprite.scale.set( 5, 5, 1 );
-        */
         var material = new THREE.MeshBasicMaterial({
             map: textureMap,
             transparent: true
         });
 
-        // TODO: Refactor this
-        counter++;
-        var num = getRandomArbitrary(0,5);
-        var num2 = getRandomArbitrary(0,5);
-
-        var quadrant = counter % 4;
-        console.log(quadrant);
-        switch (quadrant) {
-            case 0:
-                num *= 1;
-                num2 *= 1;
-                break;
-            case 1:
-                num *= -1;
-                num2 *= 1;
-                break;
-            case 2:
-                num *= 1;
-                num2 *= -1;
-                break;
-            case 2:
-                num *= -1;
-                num2 *= -1;
-                break;
-
-            default:
-
+        var list = [-5, -4, -3, 0, 3, 4, 5];
+        var x = randomInList(list);
+        var z;
+        if(x !== 0){
+            z = randomInList(list) + getRandomArbitrary(-2, 2);
+        } else {
+            z = randomInList([-5, -4, -3, 3, 4, 5]) + getRandomArbitrary(-2, 2);
         }
 
-        /*
-        sprite.position.set(
-            //getRandomArbitrary(-5, 5),
-            num,
-            10,
-            5+num2
+        var mesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(4, 4),
+            material
         );
-        sprite.tweet = tweet;
-        console.log('x: ' + sprite.position.x, 'z: ' + sprite.position.z);
-
-        VR_APP.scene.add(sprite);
-        VR_APP.messages[index].mesh = sprite;
-        */
-
-        var plane = new THREE.PlaneGeometry(4, 4);
-
-        var mesh = new THREE.Mesh(plane, material);
-        // mesh.overdraw = true;
         mesh.doubleSided = true;
-        mesh.position.set(num, 10, 5 + num2);
-        //mesh.position.set(0, 10, -5);
+        mesh.position.set(x, 10, z);
         mesh.tweet = tweet;
+
         VR_APP.scene.add(mesh);
         VR_APP.messages[index].mesh = mesh;
-
-        //console.log('MESH', mesh);
-
         VR_APP.messages[index].initialized = true;
 
-        sprites.push(mesh);
+        meshes.push(mesh);
     }
 
     // Create a canvas object and draw text on it
@@ -222,11 +186,11 @@ VR_APP.screens.main = (function() {
                 media.onload = function() {
                     // TODO set media size restrictions
                     context.drawImage(media, 0 + img.width, (lines + 2) * spacing, media.width / 4, media.height / 4);
-                    addTweetToScene(index, canvas, tweet.text);
+                    addTweetToScene(index, canvas, tweet);
                 }
                 media.src = tweet.media_url;
             } else {
-                addTweetToScene(index, canvas, tweet.text);
+                addTweetToScene(index, canvas, tweet);
             }
 
         };
@@ -274,25 +238,33 @@ VR_APP.screens.main = (function() {
         }
     }
 
+    function likeTweet(tweet) {
+        $.get(
+            '/feed/like/' + tweet.id,
+            function(data, status) {
+                console.log(data, status);
+            }
+        );
+    }
+
     function getSelectedTweets() {
-        // update the picking ray with the camera and mouse position
-    	//raycaster.setFromCamera(VR_APP.camera.getWorldPosition(), VR_APP.camera.getWorldDirection());
-        //console.log('WORLD DIR', VR_APP.camera.getWorldDirection());
         raycaster.set(VR_APP.camera.getWorldPosition(), VR_APP.camera.getWorldDirection());
-        //console.log('DIR', VR_APP.camera.getWorldDirection());
-    	// calculate objects intersecting the picking ray
+
     	var intersects = raycaster.intersectObjects(VR_APP.scene.children);
 
-        for(var i = 0; i < sprites.length; i++) {
-            sprites[i].material.color.set(0x00ff00);
+        for(var i = 0; i < meshes.length; i++) {
+            //meshes[i].material.color.set(0x00ff00);
         }
 
     	for (var i = 0; i < intersects.length; i++) {
             if(intersects[i].object.hasOwnProperty('tweet')) {
-                // mostly working!
-                console.log(intersects[i].object.tweet);
-                console.log(intersects[i]);
-                intersects[ i ].object.material.color.set( 0xff0000 );
+                if(!intersects[i].object.hasOwnProperty('liked')) {
+                    console.log(intersects[i].object);
+                    intersects[i].object.liked = true;
+                    intersects[i].object.material.color.set(0xff0000);
+
+                    likeTweet(intersects[i].object.tweet);
+                }
             }
     	}
     }
@@ -300,7 +272,7 @@ VR_APP.screens.main = (function() {
     function getInput() {
         if(clicked) {
             getSelectedTweets();
-            //clicked = false;
+            clicked = false;
         }
     }
 
