@@ -1,11 +1,12 @@
 var passport = require('passport');
 var TwitterStrategy = require('passport-twitter').Strategy;
+var env = require('../../env.js');
 
 module.exports = function() {
     passport.use(new TwitterStrategy({
-        consumerKey: 'L7XkZPm9OlxSrK4wyAhWdbFza',
-        consumerSecret: 'fdbgMlGoJGFhsk6GPU74TpAPQltVHM3EG31buInqRmOi25UsDj',
-        callbackURL: 'http://192.168.1.103:8000/auth/twitter/callback',
+        consumerKey: env.CONSUMER_KEY,
+        consumerSecret: env.CONSUMER_SECRET,
+        callbackURL: 'http://192.168.1.102:8000/auth/twitter/callback',
         passReqToCallback: true
     },
     function(req, token, tokenSecret, profile, done) {

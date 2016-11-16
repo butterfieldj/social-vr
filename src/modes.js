@@ -7,5 +7,3 @@ var Modes = {
   // Full screen split screen VR mode.
   VR: 3
 };
-
-module.exports = Modes;

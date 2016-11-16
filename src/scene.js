@@ -9,8 +9,6 @@ VR_APP.screens.main = (function() {
         meshes = [],
         target;
 
-    var counter = 0;
-
     function onResize(e) {
         VR_APP.effect.setSize(window.innerWidth, window.innerHeight);
         VR_APP.camera.aspect = window.innerWidth / window.innerHeight;
@@ -130,13 +128,13 @@ VR_APP.screens.main = (function() {
             transparent: true
         });
 
-        var list = [-5, -4, -3, 0, 3, 4, 5];
+        var list = [-4, 0, 4];
         var x = randomInList(list);
         var z;
         if(x !== 0){
-            z = randomInList(list) + getRandomArbitrary(-2, 2);
+            z = randomInList(list) + getRandomArbitrary(-1, 1);
         } else {
-            z = randomInList([-5, -4, -3, 3, 4, 5]) + getRandomArbitrary(-2, 2);
+            z = randomInList([-4, 4]) + getRandomArbitrary(-1, 1);
         }
 
         var mesh = new THREE.Mesh(
@@ -204,12 +202,11 @@ VR_APP.screens.main = (function() {
                 numberOfMesseges += 1;
                 VR_APP.messages[i].mesh.position.y -= 0.02;
 
-                var pos = VR_APP.camera.getWorldDirection();
-                //VR_APP.messages[i].mesh.position.set(pos.x - 5, pos.y, pos.z - 5);
+                var pos = VR_APP.camera.getWorldPosition();
 
-                // SET ROTATION HERE?!
-                //console.log(VR_APP.messages[i].mesh);
-                VR_APP.messages[i].mesh.lookAt(VR_APP.camera.getWorldPosition());
+                VR_APP.messages[i].mesh.lookAt(new THREE.Vector3(pos.x, VR_APP.messages[i].mesh.position.y, pos.z));
+
+                //debugger;
 
                 if(VR_APP.messages[i].mesh.position.y < -10){
                     VR_APP.scene.remove(VR_APP.messages[i].mesh);
@@ -296,7 +293,9 @@ VR_APP.screens.main = (function() {
         VR_APP.controls.update();
 
         // Render the scene through the manager.
-        VR_APP.manager.render(VR_APP.scene, VR_APP.camera, VR_APP.lastRender);
+        //VR_APP.manager.render(VR_APP.scene, VR_APP.camera, VR_APP.lastRender);
+        VR_APP.effect.render(VR_APP.scene, VR_APP.camera);
+        //VR_APP.renderer.render(VR_APP.scene, VR_APP.camera);
 
         requestAnimationFrame(animate);
     }

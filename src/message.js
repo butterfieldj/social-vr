@@ -1,3 +1,3 @@
-VR_APP['message_handler'] = function(msg){
+VR_APP.message_handler = function(msg){
 
 }

@@ -1,94 +1,74 @@
-/*
- * Copyright 2015 Google Inc. All Rights Reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-var ButtonManager = require('./button-manager.js');
-var Emitter = require('./emitter.js');
-var Modes = require('./modes.js');
-var Util = require('./util.js');
-
 /**
  * Helper for getting in and out of VR mode.
  */
 function WebVRManager(renderer, effect, params) {
-  this.params = params || {};
+    this.params = params || {};
 
-  this.mode = Modes.UNKNOWN;
+    this.mode = Modes.UNKNOWN;
 
-  // Set option to hide the button.
-  this.hideButton = this.params.hideButton || false;
-  // Whether or not the FOV should be distorted or un-distorted. By default, it
-  // should be distorted, but in the case of vertex shader based distortion,
-  // ensure that we use undistorted parameters.
-  this.predistorted = !!this.params.predistorted;
+    // Set option to hide the button.
+    this.hideButton = this.params.hideButton || false;
+    // Whether or not the FOV should be distorted or un-distorted. By default, it
+    // should be distorted, but in the case of vertex shader based distortion,
+    // ensure that we use undistorted parameters.
+    this.predistorted = !!this.params.predistorted;
 
-  // Save the THREE.js renderer and effect for later.
-  this.renderer = renderer;
-  this.effect = effect;
-  var polyfillWrapper = document.querySelector('.webvr-polyfill-fullscreen-wrapper');
-  this.button = new ButtonManager(polyfillWrapper);
+    // Save the THREE.js renderer and effect for later.
+    this.renderer = renderer;
+    this.effect = effect;
+    var polyfillWrapper = document.querySelector('.webvr-polyfill-fullscreen-wrapper');
+    this.button = new ButtonManager(polyfillWrapper);
 
-  // Only enable VR mode if we're on a mobile device.
-  this.isVRCompatible = Util.isMobile();
+    // Only enable VR mode if we're on a mobile device.
+    this.isVRCompatible = Util.isMobile();
 
-  this.isFullscreenDisabled = !!Util.getQueryParameter('no_fullscreen');
-  this.startMode = Modes.NORMAL;
-  var startModeParam = parseInt(Util.getQueryParameter('start_mode'));
-  if (!isNaN(startModeParam)) {
-    this.startMode = startModeParam;
-  }
+    this.isFullscreenDisabled = !!Util.getQueryParameter('no_fullscreen');
+    this.startMode = Modes.NORMAL;
+    var startModeParam = parseInt(Util.getQueryParameter('start_mode'));
+    if (!isNaN(startModeParam)) {
+        this.startMode = startModeParam;
+    }
 
-  if (this.hideButton) {
-    this.button.setVisibility(false);
-  }
+    if (this.hideButton) {
+        this.button.setVisibility(false);
+    }
 
-  // Check if the browser is compatible with WebVR.
-  this.getDeviceByType_(VRDisplay).then(function(hmd) {
+    // Check if the browser is compatible with WebVR.
+    this.getDeviceByType_(VRDisplay).then(function(hmd) {
     this.hmd = hmd;
 
     switch (this.startMode) {
-      case Modes.MAGIC_WINDOW:
-        this.setMode_(Modes.MAGIC_WINDOW);
-        break;
-      case Modes.VR:
-        this.enterVRMode_();
-        this.setMode_(Modes.VR);
-        break;
-      default:
-        this.setMode_(Modes.NORMAL);
+        case Modes.MAGIC_WINDOW:
+            this.setMode_(Modes.MAGIC_WINDOW);
+            break;
+        case Modes.VR:
+            this.enterVRMode_();
+            this.setMode_(Modes.VR);
+            break;
+        default:
+            this.setMode_(Modes.NORMAL);
     }
 
     this.emit('initialized');
-  }.bind(this));
+}.bind(this));
 
-  // Hook up button listeners.
-  this.button.on('fs', this.onFSClick_.bind(this));
-  this.button.on('vr', this.onVRClick_.bind(this));
+// Hook up button listeners.
+this.button.on('fs', this.onFSClick_.bind(this));
+this.button.on('vr', this.onVRClick_.bind(this));
 
-  // Bind to fullscreen events.
-  document.addEventListener('webkitfullscreenchange',
-      this.onFullscreenChange_.bind(this));
-  document.addEventListener('mozfullscreenchange',
-      this.onFullscreenChange_.bind(this));
-  document.addEventListener('msfullscreenchange',
-      this.onFullscreenChange_.bind(this));
+// Bind to fullscreen events.
+document.addEventListener('webkitfullscreenchange',
+  this.onFullscreenChange_.bind(this));
+document.addEventListener('mozfullscreenchange',
+  this.onFullscreenChange_.bind(this));
+document.addEventListener('msfullscreenchange',
+  this.onFullscreenChange_.bind(this));
 
-  // Bind to VR* specific events.
-  window.addEventListener('vrdisplaypresentchange',
-      this.onVRDisplayPresentChange_.bind(this));
-  window.addEventListener('vrdisplaydeviceparamschange',
-      this.onVRDisplayDeviceParamsChange_.bind(this));
+// Bind to VR* specific events.
+window.addEventListener('vrdisplaypresentchange',
+  this.onVRDisplayPresentChange_.bind(this));
+window.addEventListener('vrdisplaydeviceparamschange',
+  this.onVRDisplayDeviceParamsChange_.bind(this));
 }
 
 WebVRManager.prototype = new Emitter();
@@ -241,5 +221,3 @@ WebVRManager.prototype.onFullscreenChange_ = function(e) {
     this.setMode_(Modes.NORMAL);
   }
 };
-
-module.exports = WebVRManager;
