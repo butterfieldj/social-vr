@@ -9,25 +9,22 @@ function ButtonManager(opt_root) {
     // Make the fullscreen button.
     var vrButton = this.createButton();
     vrButton.src = this.ICONS.cardboard;
-    vrButton.title = 'Fullscreen mode';
-
+    vrButton.title = 'VR Mode';
     vrButton.style.bottom = 0;
     vrButton.style.right = 0;
-    vrButton.addEventListener('click', this.createClickHandler_('fs'));
+    vrButton.addEventListener('click', this.createClickHandler_('vr'));
     root.appendChild(vrButton);
     this.vrButton = vrButton;
 
     // Make the VR button.
-    /*
-    var vrButton = this.createButton();
-    vrButton.src = this.ICONS.cardboard;
-    vrButton.title = 'Virtual reality mode';
-    vrButton.style.bottom = 0;
-    vrButton.style.right = '48px';
-    vrButton.addEventListener('click', this.createClickHandler_('vr'));
-    root.appendChild(vrButton);
-    this.vrButton = vrButton;
-    */
+    var normalButton = this.createButton();
+    normalButton.src = this.ICONS.fullscreen;
+    normalButton.title = 'Normal mode';
+    normalButton.style.bottom = 0;
+    normalButton.style.right = '48px';
+    normalButton.addEventListener('click', this.createClickHandler_('fs'));
+    root.appendChild(normalButton);
+    this.normalButton = normalButton;
 
     this.isVisible = true;
 }
@@ -55,16 +52,17 @@ ButtonManager.prototype.createButton = function() {
     // Prevent button from being selected and dragged.
     button.draggable = false;
     button.addEventListener('dragstart', function(e) {
-    e.preventDefault();
+        e.preventDefault();
     });
 
     // Style it on hover.
     button.addEventListener('mouseenter', function(e) {
-    s.filter = s.webkitFilter = 'drop-shadow(0 0 5px rgba(255,255,255,1))';
+        s.filter = s.webkitFilter = 'drop-shadow(0 0 5px rgba(255,255,255,1))';
     });
     button.addEventListener('mouseleave', function(e) {
-    s.filter = s.webkitFilter = '';
+        s.filter = s.webkitFilter = '';
     });
+
     return button;
 };
 

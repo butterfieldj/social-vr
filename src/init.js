@@ -34,7 +34,6 @@ VR_APP.effect.setSize(window.innerWidth, window.innerHeight);
 
 // Create a VR manager helper to enter and exit VR mode.
 var params = {
-    hideButton: false, // Default: false.
     isUndistorted: false // Default: false.
 };
 VR_APP.manager = new WebVRManager(VR_APP.renderer, VR_APP.effect, params);

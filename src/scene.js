@@ -293,8 +293,8 @@ VR_APP.screens.main = (function() {
         VR_APP.controls.update();
 
         // Render the scene through the manager.
-        //VR_APP.manager.render(VR_APP.scene, VR_APP.camera, VR_APP.lastRender);
-        VR_APP.effect.render(VR_APP.scene, VR_APP.camera);
+        VR_APP.manager.render(VR_APP.scene, VR_APP.camera, VR_APP.lastRender);
+        //VR_APP.effect.render(VR_APP.scene, VR_APP.camera);
         //VR_APP.renderer.render(VR_APP.scene, VR_APP.camera);
 
         requestAnimationFrame(animate);
