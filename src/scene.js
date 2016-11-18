@@ -7,7 +7,8 @@ VR_APP.screens.main = (function() {
         raycaster = new THREE.Raycaster(),
         clicked = false,
         meshes = [],
-        target;
+        target,
+        explosion;
 
     function onResize(e) {
         VR_APP.effect.setSize(window.innerWidth, window.innerHeight);
@@ -256,11 +257,14 @@ VR_APP.screens.main = (function() {
     	for (var i = 0; i < intersects.length; i++) {
             if(intersects[i].object.hasOwnProperty('tweet')) {
                 if(!intersects[i].object.hasOwnProperty('liked')) {
-                    console.log(intersects[i].object);
+                    console.log(intersects[i].object.position);
+                    var pos = intersects[i].object.position;
+                    explosion = ExplodeAnimation(pos.x, pos.y, pos.z);
+                    VR_APP.scene.add(explosion.object);
                     intersects[i].object.liked = true;
                     intersects[i].object.material.color.set(0xff0000);
 
-                    likeTweet(intersects[i].object.tweet);
+                    //likeTweet(intersects[i].object.tweet);
                 }
             }
     	}
@@ -280,6 +284,13 @@ VR_APP.screens.main = (function() {
         }
     }
 
+    function updateExplosion() {
+        if(explosion) {
+            //console.log(explosion);
+            explosion.update();
+        }
+    }
+
     function animate(timestamp) {
         var delta = Math.min(timestamp - VR_APP.lastRender, 500);
         VR_APP.lastRender = timestamp;
@@ -288,6 +299,7 @@ VR_APP.screens.main = (function() {
 
         updateTarget();
         updateMessages();
+        updateExplosion();
 
         // Update VR headset position and apply to camera.
         VR_APP.controls.update();
