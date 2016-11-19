@@ -8,7 +8,7 @@ VR_APP.screens.main = (function() {
         clicked = false,
         meshes = [],
         target,
-        explosion;
+        explosions = [];
 
     function onResize(e) {
         VR_APP.effect.setSize(window.innerWidth, window.innerHeight);
@@ -22,8 +22,6 @@ VR_APP.screens.main = (function() {
 
     function initialize(){
         VR_APP.lastRender = 0;
-
-        console.log(VR_APP.manager);
 
         window.addEventListener('resize', onResize, true);
         window.addEventListener('vrdisplaypresentchange', onResize, true);
@@ -133,9 +131,9 @@ VR_APP.screens.main = (function() {
         var x = randomInList(list);
         var z;
         if(x !== 0){
-            z = randomInList(list) + getRandomArbitrary(-1, 1);
+            z = randomInList(list) + getRandomArbitrary(-0.5, 0.5);
         } else {
-            z = randomInList([-4, 4]) + getRandomArbitrary(-1, 1);
+            z = randomInList([-4, 4]) + getRandomArbitrary(-0.5, 0.5);
         }
 
         var mesh = new THREE.Mesh(
@@ -206,9 +204,6 @@ VR_APP.screens.main = (function() {
                 var pos = VR_APP.camera.getWorldPosition();
 
                 VR_APP.messages[i].mesh.lookAt(new THREE.Vector3(pos.x, VR_APP.messages[i].mesh.position.y, pos.z));
-
-                //debugger;
-
                 if(VR_APP.messages[i].mesh.position.y < -10){
                     VR_APP.scene.remove(VR_APP.messages[i].mesh);
                     VR_APP.messages.splice(i, 1);
@@ -250,18 +245,13 @@ VR_APP.screens.main = (function() {
 
     	var intersects = raycaster.intersectObjects(VR_APP.scene.children);
 
-        for(var i = 0; i < meshes.length; i++) {
-            //meshes[i].material.color.set(0x00ff00);
-        }
-
     	for (var i = 0; i < intersects.length; i++) {
             if(intersects[i].object.hasOwnProperty('tweet')) {
                 if(!intersects[i].object.hasOwnProperty('liked')) {
-                    console.log(intersects[i].object.position);
-                    var pos = intersects[i].object.position;
-                    explosion = ExplodeAnimation(pos.x, pos.y, pos.z);
+                    var explosion = ExplodeAnimation(target.position.x, target.position.y, target.position.z);
                     VR_APP.scene.add(explosion.object);
-                    intersects[i].object.liked = true;
+                    explosions.push(explosion);
+                    //intersects[i].object.liked = true;
                     intersects[i].object.material.color.set(0xff0000);
 
                     //likeTweet(intersects[i].object.tweet);
@@ -284,10 +274,14 @@ VR_APP.screens.main = (function() {
         }
     }
 
-    function updateExplosion() {
-        if(explosion) {
-            //console.log(explosion);
-            explosion.update();
+    function updateExplosions() {
+        for(var i = explosions.length - 1; i >= 0; i--) {
+            explosions[i].update();
+            explosions[i].decay -= 1;
+            if(explosions[i].decay < 0) {
+                explosions.splice(i, 1);
+                VR_APP.scene.remove(explosions[i]);
+            }
         }
     }
 
@@ -299,7 +293,7 @@ VR_APP.screens.main = (function() {
 
         updateTarget();
         updateMessages();
-        updateExplosion();
+        updateExplosions();
 
         // Update VR headset position and apply to camera.
         VR_APP.controls.update();

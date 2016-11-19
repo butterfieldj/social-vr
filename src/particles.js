@@ -2,9 +2,9 @@ function ExplodeAnimation(x, y, z)
 {
     var movementSpeed = .5;
     var totalObjects = 100;
-    var objectSize = .1;
+    var objectSize = .075;
     var sizeRandomness = 4000;
-    var colors = [0xFF0000];
+    var color = 0xFF0000;
     var dirs = [];
     var geometry = new THREE.Geometry();
     for (i = 0; i < totalObjects; i ++)
@@ -18,7 +18,7 @@ function ExplodeAnimation(x, y, z)
         dirs.push({x:(Math.random() * movementSpeed)-(movementSpeed/2),y:(Math.random() * movementSpeed)-(movementSpeed/2),z:(Math.random() * movementSpeed)-(movementSpeed/2)});
     }
 
-    var material = new THREE.PointsMaterial( { size: objectSize,  color: colors[Math.round(Math.random() * colors.length)] });
+    var material = new THREE.PointsMaterial( { size: objectSize,  color: color });
     var particles = new THREE.Points( geometry, material );
 
     this.object = particles;
@@ -27,8 +27,6 @@ function ExplodeAnimation(x, y, z)
     this.xDir = (Math.random() * movementSpeed)-(movementSpeed/2);
     this.yDir = (Math.random() * movementSpeed)-(movementSpeed/2);
     this.zDir = (Math.random() * movementSpeed)-(movementSpeed/2);
-
-    //VR_APP.scene.add(this.object);
 
     this.update = function(){
         var pCount = totalObjects;
@@ -44,28 +42,7 @@ function ExplodeAnimation(x, y, z)
 
     return {
         object: this.object,
-        update: this.update
+        update: this.update,
+        decay: 180
     };
 }
-
-/*
-renderer.render(scene, camera);
-parts.push(new ExplodeAnimation(0, 0));
-render();
-
-function render() {
-    requestAnimationFrame( render );
-
-    var pCount = parts.length;
-    while(pCount--) {
-        parts[pCount].update();
-    }
-
-	renderer.render( scene, camera );
-}
-
-function onclick(){
-    event.preventDefault();
-    parts.push(new ExplodeAnimation((Math.random() * sizeRandomness)-(sizeRandomness/2), (Math.random() * sizeRandomness)-(sizeRandomness/2)));
-}
-*/
