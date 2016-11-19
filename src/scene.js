@@ -8,7 +8,8 @@ VR_APP.screens.main = (function() {
         clicked = false,
         meshes = [],
         target,
-        explosions = [];
+        explosions = [],
+        heart;
 
     function onResize(e) {
         VR_APP.effect.setSize(window.innerWidth, window.innerHeight);
@@ -206,15 +207,13 @@ VR_APP.screens.main = (function() {
                 VR_APP.messages[i].mesh.position.y -= 0.02;
 
                 var pos = VR_APP.camera.getWorldPosition();
-
                 VR_APP.messages[i].mesh.lookAt(pos);
-                //VR_APP.messages[i].mesh.lookAt(new THREE.Vector3(pos.x, VR_APP.messages[i].mesh.position.y, pos.z));
+
                 if(VR_APP.messages[i].mesh.position.y < -10){
                     VR_APP.scene.remove(VR_APP.messages[i].mesh);
                     VR_APP.messages.splice(i, 1);
                     currentFrame = 0;
                 }
-
             } else {
                 if(canAdd){
                     currentFrame += 1;
@@ -243,6 +242,33 @@ VR_APP.screens.main = (function() {
         );
     }
 
+    function newExplosion() {
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        canvas.height = 128;
+        canvas.width = 128;
+        context.fillStyle = '#d8e7ff';
+        context.fillRect(0, 0, 128, 128);
+        context.drawImage(heart, 0, 0, 128, 128);
+
+        var textureMap = new THREE.Texture(canvas);
+        textureMap.needsUpdate = true;
+
+        var explosion = ExplodeAnimation(target.position.x, target.position.y, target.position.z, textureMap);
+        VR_APP.scene.add(explosion.object);
+        explosions.push(explosion);
+    }
+
+    function createExplosion() {
+        if(!heart) {
+            heart = new Image();
+            heart.onload = newExplosion;
+            heart.src = '/img/heart.png'
+        } else {
+            newExplosion();
+        }
+    }
+
     function getSelectedTweets() {
         raycaster.set(VR_APP.camera.getWorldPosition(), VR_APP.camera.getWorldDirection());
 
@@ -251,11 +277,9 @@ VR_APP.screens.main = (function() {
     	for (var i = 0; i < intersects.length; i++) {
             if(intersects[i].object.hasOwnProperty('tweet')) {
                 if(!intersects[i].object.hasOwnProperty('liked')) {
-                    var explosion = ExplodeAnimation(target.position.x, target.position.y, target.position.z);
-                    VR_APP.scene.add(explosion.object);
-                    explosions.push(explosion);
+                    createExplosion();
                     //intersects[i].object.liked = true;
-                    //likeTweet(intersects[i].object.tweet);
+                    likeTweet(intersects[i].object.tweet);
                 }
             }
     	}

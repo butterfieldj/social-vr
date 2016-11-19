@@ -33,10 +33,7 @@ VR_APP.effect = new THREE.CardboardEffect(VR_APP.renderer);
 VR_APP.effect.setSize(window.innerWidth, window.innerHeight);
 
 // Create a VR manager helper to enter and exit VR mode.
-var params = {
-    isUndistorted: false // Default: false.
-};
-VR_APP.manager = new WebVRManager(VR_APP.renderer, VR_APP.effect, params);
+VR_APP.manager = new WebVRManager(VR_APP.renderer, VR_APP.effect, {});
 
 var fontLoader = new THREE.FontLoader();
 fontLoader.load('/node_modules/three/examples/fonts/helvetiker_regular.typeface.js', function(fnt){

@@ -1,4 +1,4 @@
-function ExplodeAnimation(x, y, z)
+function ExplodeAnimation(x, y, z, texture)
 {
     var movementSpeed = .5;
     var totalObjects = 100;
@@ -18,7 +18,11 @@ function ExplodeAnimation(x, y, z)
         dirs.push({x:(Math.random() * movementSpeed)-(movementSpeed/2),y:(Math.random() * movementSpeed)-(movementSpeed/2),z:(Math.random() * movementSpeed)-(movementSpeed/2)});
     }
 
-    var material = new THREE.PointsMaterial( { size: objectSize,  color: color });
+    var material = new THREE.PointsMaterial({
+        size: objectSize,
+        map: texture
+    });
+
     var particles = new THREE.Points( geometry, material );
 
     this.object = particles;
