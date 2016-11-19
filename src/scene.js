@@ -1,6 +1,6 @@
 VR_APP.screens.main = (function() {
 
-    var framesBetween = 5000,
+    var framesBetween = 2500,
         currentFrame = 0,
         canAdd = false,
         loader = new THREE.TextureLoader(),
@@ -27,52 +27,56 @@ VR_APP.screens.main = (function() {
         window.addEventListener('vrdisplaypresentchange', onResize, true);
         document.addEventListener('click', onClick);
 
-        // Add a repeating grid as a skybox.
-        var boxWidth = 20;
-        loader.load('/img/background.png', onTextureLoaded);
+        var grid = new THREE.GridHelper(200, 10, 0xffffff, 0xffffff);
+        grid.position.y = -5;
+        VR_APP.scene.add(grid);
+        VR_APP.scene.fog = new THREE.FogExp2( 0xd8e7ff, 0.0128 );
+        VR_APP.renderer.setClearColor( VR_APP.scene.fog.color, 1 );
 
+        // Target in middle of screen
+        var crosshairs = new Image();
+        crosshairs.onload = function() {
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            canvas.height = 128;
+            canvas.width = 128;
+            context.fillStyle = '#000000';
+            context.drawImage(crosshairs, 0, 0, 128, 128);
+
+            var textureMap = new THREE.Texture(canvas);
+            textureMap.needsUpdate = true;
+
+            var material = new THREE.SpriteMaterial({
+                map: textureMap,
+                transparent: false,
+                color: 0xffffff
+            });
+
+            target = new THREE.Sprite(material);
+            target.scale.set(.1, .1, .1);
+
+            VR_APP.scene.add(target);
+        }
+        crosshairs.src = '/img/crosshairs.png';
+
+        // Add a repeating grid as a skybox.
+        /*
+        var boxWidth = 20;
+        loader.load('/img/gray.png', onTextureLoaded);
         function onTextureLoaded(texture) {
+            /*
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.RepeatWrapping;
             texture.repeat.set(boxWidth, boxWidth);
-
             var geometry = new THREE.BoxGeometry(boxWidth, boxWidth, boxWidth);
-
             var material = new THREE.MeshBasicMaterial({
                 map: texture,
                 side: THREE.BackSide
             });
-
             var skybox = new THREE.Mesh(geometry, material);
             VR_APP.scene.add(skybox);
-
-            // Target in middle of screen
-            var heart = new Image();
-            heart.onload = function() {
-                var canvas = document.createElement('canvas');
-                var context = canvas.getContext('2d');
-                canvas.height = 16;
-                canvas.width = 16;
-                context.fillStyle = '#000000';
-                context.drawImage(heart, 0, 0, 16, 16);
-                //context.fillRect(0, 0, 8, 8);
-
-                var textureMap = new THREE.Texture(canvas);
-                textureMap.needsUpdate = true;
-
-                var material = new THREE.SpriteMaterial({
-                    map: textureMap,
-                    transparent: false,
-                    color: 0xffffff
-                });
-
-                target = new THREE.Sprite(material);
-                target.scale.set(.02, .02, .02);
-
-                VR_APP.scene.add(target);
-            }
-            heart.src = '/img/heart.png';
         }
+        */
     }
 
     function drawText(context, text, x, y, fillStyle) {
@@ -141,7 +145,7 @@ VR_APP.screens.main = (function() {
             material
         );
         mesh.doubleSided = true;
-        mesh.position.set(x, 10, z);
+        mesh.position.set(x, 7.5, z);
         mesh.tweet = tweet;
 
         VR_APP.scene.add(mesh);
@@ -203,7 +207,8 @@ VR_APP.screens.main = (function() {
 
                 var pos = VR_APP.camera.getWorldPosition();
 
-                VR_APP.messages[i].mesh.lookAt(new THREE.Vector3(pos.x, VR_APP.messages[i].mesh.position.y, pos.z));
+                VR_APP.messages[i].mesh.lookAt(pos);
+                //VR_APP.messages[i].mesh.lookAt(new THREE.Vector3(pos.x, VR_APP.messages[i].mesh.position.y, pos.z));
                 if(VR_APP.messages[i].mesh.position.y < -10){
                     VR_APP.scene.remove(VR_APP.messages[i].mesh);
                     VR_APP.messages.splice(i, 1);
@@ -216,8 +221,6 @@ VR_APP.screens.main = (function() {
                     if(currentFrame >= framesBetween){
                         currentFrame = 0;
                         createMessageText2d(i);
-                        //canAdd = false;
-                        //console.log('adding');
                     }
                 } else {
                     currentFrame = 0;
@@ -252,8 +255,6 @@ VR_APP.screens.main = (function() {
                     VR_APP.scene.add(explosion.object);
                     explosions.push(explosion);
                     //intersects[i].object.liked = true;
-                    intersects[i].object.material.color.set(0xff0000);
-
                     //likeTweet(intersects[i].object.tweet);
                 }
             }
@@ -300,8 +301,6 @@ VR_APP.screens.main = (function() {
 
         // Render the scene through the manager.
         VR_APP.manager.render(VR_APP.scene, VR_APP.camera, VR_APP.lastRender);
-        //VR_APP.effect.render(VR_APP.scene, VR_APP.camera);
-        //VR_APP.renderer.render(VR_APP.scene, VR_APP.camera);
 
         requestAnimationFrame(animate);
     }
