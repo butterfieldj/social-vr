@@ -8,10 +8,9 @@ var feed = require('./routes/feed');
 var app = express();
 var port = process.env.PORT || 8000;
 
-// view engine setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use(session({secret: 'roxana'}));
+app.use(session({ secret: 'roxana' }));
 
 require('./config/passport')(app);
 
@@ -20,12 +19,11 @@ app.use('/auth', auth);
 app.use('/feed', feed);
 
 app.use(express.static(path.join(__dirname, '')));
-//app.use('/images', express.static(__dirname + 'images'));
 
-if(!process.env.CONSUMER_KEY){
+if (!process.env.CONSUMER_KEY) {
     var env = require('./env.js');
 }
 
-var server = require('http').createServer(app).listen(port, function(){
+var server = require('http').createServer(app).listen(port, function() {
     console.log('listening on ' + port);
 });

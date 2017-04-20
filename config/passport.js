@@ -6,14 +6,10 @@ module.exports = function(app) {
     app.use(passport.session());
 
     passport.serializeUser(function(user, done) {
-        console.log("SERIALIZING");
-
         done(null, user);
     });
 
     passport.deserializeUser(function(user, done) {
-        console.log("DESERIALIZING");
-
         done(null, user);
     });
 

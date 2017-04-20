@@ -7,15 +7,12 @@ var env = require('../env.js');
 var twitter = require('../services/twitter')(env.CONSUMER_KEY, env.CONSUMER_SECRET);
 
 router.use('/', function(req, res, next) {
-    // If passport has not attached the user
-    // redirect them to the sign on page
-    if(!req.user) {
+    if (!req.user) {
         res.redirect('/');
     }
     next();
 });
 
-/* GET users listing. */
 router.get('/', function(req, res, next) {
     twitter.getUserHomeTimeline(
         req.user.twitter.token,
@@ -23,7 +20,7 @@ router.get('/', function(req, res, next) {
         req.user.twitter.id,
         function(results) {
             var tweets = [];
-            for(var i = 0; i < results.length; i++) {
+            for (var i = 0; i < results.length; i++) {
                 tweets.push({
                     text: results[i].text,
                     user: {

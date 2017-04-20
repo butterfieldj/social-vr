@@ -1,11 +1,10 @@
 function Emitter() {
-  this.callbacks = {};
+    this.callbacks = {};
 }
 
 Emitter.prototype.emit = function(eventName) {
     var callbacks = this.callbacks[eventName];
     if (!callbacks) {
-        //console.log('No valid callback specified.');
         return;
     }
 
