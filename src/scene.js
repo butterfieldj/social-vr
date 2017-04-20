@@ -21,7 +21,7 @@ VR_APP.screens.main = (function() {
         clicked = true;
     }
 
-    function initialize(){
+    function initialize() {
         VR_APP.lastRender = 0;
 
         window.addEventListener('resize', onResize, true);
@@ -31,8 +31,8 @@ VR_APP.screens.main = (function() {
         var grid = new THREE.GridHelper(200, 10, 0xffffff, 0xffffff);
         grid.position.y = -5;
         VR_APP.scene.add(grid);
-        VR_APP.scene.fog = new THREE.FogExp2( 0xd8e7ff, 0.0128 );
-        VR_APP.renderer.setClearColor( VR_APP.scene.fog.color, 1 );
+        VR_APP.scene.fog = new THREE.FogExp2(0xd8e7ff, 0.0128);
+        VR_APP.renderer.setClearColor(VR_APP.scene.fog.color, 1);
 
         // Target in middle of screen
         var crosshairs = new Image();
@@ -59,25 +59,6 @@ VR_APP.screens.main = (function() {
             VR_APP.scene.add(target);
         }
         crosshairs.src = '/img/crosshairs.png';
-
-        // Add a repeating grid as a skybox.
-        /*
-        var boxWidth = 20;
-        loader.load('/img/gray.png', onTextureLoaded);
-        function onTextureLoaded(texture) {
-            /*
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            texture.repeat.set(boxWidth, boxWidth);
-            var geometry = new THREE.BoxGeometry(boxWidth, boxWidth, boxWidth);
-            var material = new THREE.MeshBasicMaterial({
-                map: texture,
-                side: THREE.BackSide
-            });
-            var skybox = new THREE.Mesh(geometry, material);
-            VR_APP.scene.add(skybox);
-        }
-        */
     }
 
     function drawText(context, text, x, y, fillStyle) {
@@ -86,14 +67,13 @@ VR_APP.screens.main = (function() {
     }
 
     function drawLongText(context, text, x, y, fillStyle, size) {
-        //text.replace(/https?:.*/, '')
         var words = text.split(' ');
         var currentWidth = 0;
         var currentWord = '';
         var lines = 1;
-        for(var i = 0; i < words.length; i++) {
+        for (var i = 0; i < words.length; i++) {
             currentWidth += context.measureText(words[i]).width;
-            if(currentWidth > size) {
+            if (currentWidth > size) {
                 drawText(context, currentWord, x, y, fillStyle);
                 currentWidth = 0;
                 currentWord = words[i];
@@ -104,7 +84,7 @@ VR_APP.screens.main = (function() {
             }
         }
 
-        if(currentWord != '') {
+        if (currentWord !== '') {
             drawText(context, currentWord, x, y, fillStyle);
         }
 
@@ -135,7 +115,7 @@ VR_APP.screens.main = (function() {
         var list = [-4, 0, 4];
         var x = randomInList(list);
         var z;
-        if(x !== 0){
+        if (x !== 0) {
             z = randomInList(list) + getRandomArbitrary(-0.5, 0.5);
         } else {
             z = randomInList([-4, 4]) + getRandomArbitrary(-0.5, 0.5);
@@ -157,7 +137,7 @@ VR_APP.screens.main = (function() {
     }
 
     // Create a canvas object and draw text on it
-    function createMessageText2d(index){
+    function createMessageText2d(index) {
         var canvas = document.createElement('canvas');
         var size = 512;
         var context = canvas.getContext('2d');
@@ -186,7 +166,6 @@ VR_APP.screens.main = (function() {
                 var media = new Image();
                 media.crossOrigin = 'anonymous';
                 media.onload = function() {
-                    // TODO set media size restrictions
                     context.drawImage(media, 0 + img.width, (lines + 2) * spacing, media.width / 4, media.height / 4);
                     addTweetToScene(index, canvas, tweet);
                 }
@@ -199,25 +178,25 @@ VR_APP.screens.main = (function() {
         img.src = tweet.user.profile_image_url;
     }
 
-    function updateMessages(){
+    function updateMessages() {
         var numberOfMesseges = 0;
-        for(var i = VR_APP.messages.length - 1; i >= 0; i--){
-            if(VR_APP.messages[i].initialized){
+        for (var i = VR_APP.messages.length - 1; i >= 0; i--) {
+            if (VR_APP.messages[i].initialized) {
                 numberOfMesseges += 1;
                 VR_APP.messages[i].mesh.position.y -= 0.02;
 
                 var pos = VR_APP.camera.getWorldPosition();
                 VR_APP.messages[i].mesh.lookAt(pos);
 
-                if(VR_APP.messages[i].mesh.position.y < -10){
+                if (VR_APP.messages[i].mesh.position.y < -10) {
                     VR_APP.scene.remove(VR_APP.messages[i].mesh);
                     VR_APP.messages.splice(i, 1);
                     currentFrame = 0;
                 }
             } else {
-                if(canAdd){
+                if (canAdd) {
                     currentFrame += 1;
-                    if(currentFrame >= framesBetween){
+                    if (currentFrame >= framesBetween) {
                         currentFrame = 0;
                         createMessageText2d(i);
                     }
@@ -227,7 +206,7 @@ VR_APP.screens.main = (function() {
             }
         }
 
-        if(numberOfMesseges < VR_APP.MAX_MESSAGES && canAdd === false){
+        if (numberOfMesseges < VR_APP.MAX_MESSAGES && canAdd === false) {
             currentFrame = 0;
             canAdd = true;
         }
@@ -260,7 +239,7 @@ VR_APP.screens.main = (function() {
     }
 
     function createExplosion() {
-        if(!heart) {
+        if (!heart) {
             heart = new Image();
             heart.onload = newExplosion;
             heart.src = '/img/heart.png'
@@ -272,38 +251,37 @@ VR_APP.screens.main = (function() {
     function getSelectedTweets() {
         raycaster.set(VR_APP.camera.getWorldPosition(), VR_APP.camera.getWorldDirection());
 
-    	var intersects = raycaster.intersectObjects(VR_APP.scene.children);
+        var intersects = raycaster.intersectObjects(VR_APP.scene.children);
 
-    	for (var i = 0; i < intersects.length; i++) {
-            if(intersects[i].object.hasOwnProperty('tweet')) {
-                if(!intersects[i].object.hasOwnProperty('liked')) {
+        for (var i = 0; i < intersects.length; i++) {
+            if (intersects[i].object.hasOwnProperty('tweet')) {
+                if (!intersects[i].object.hasOwnProperty('liked')) {
                     createExplosion();
-                    //intersects[i].object.liked = true;
                     likeTweet(intersects[i].object.tweet);
                 }
             }
-    	}
+        }
     }
 
     function getInput() {
-        if(clicked) {
+        if (clicked) {
             getSelectedTweets();
             clicked = false;
         }
     }
 
     function updateTarget() {
-        if(typeof target !== 'undefined'){
+        if (typeof target !== 'undefined') {
             var pos = VR_APP.camera.getWorldDirection();
             target.position.set(pos.x, pos.y, pos.z);
         }
     }
 
     function updateExplosions() {
-        for(var i = explosions.length - 1; i >= 0; i--) {
+        for (var i = explosions.length - 1; i >= 0; i--) {
             explosions[i].update();
             explosions[i].decay -= 1;
-            if(explosions[i].decay < 0) {
+            if (explosions[i].decay < 0) {
                 explosions.splice(i, 1);
                 VR_APP.scene.remove(explosions[i]);
             }
@@ -329,13 +307,9 @@ VR_APP.screens.main = (function() {
         requestAnimationFrame(animate);
     }
 
-    function show(){
+    function show() {
         // Kick off animation loop
         animate(performance ? performance.now() : Date.now());
-    }
-
-    function destroy(){
-        // remove all objects from the scene
     }
 
     return {
